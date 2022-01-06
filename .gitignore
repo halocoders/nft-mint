@@ -5,6 +5,7 @@ package-lock.json
 coverage
 coverage.json
 typechain
+files.txt
 
 #Hardhat files
 cache
