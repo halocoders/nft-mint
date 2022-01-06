@@ -1,0 +1,33 @@
+{
+  "name": "nft-mint",
+  "version": "1.0.0",
+  "description": "nft mint built using Hardhat and React",
+  "main": "index.js",
+  "scripts": {
+    "compile": "npx hardhat run scripts/run.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/halocoders/nft-mint.git"
+  },
+  "keywords": [],
+  "author": "Prio Pambudi",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/halocoders/nft-mint/issues"
+  },
+  "homepage": "https://github.com/halocoders/nft-mint#readme",
+  "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.0.3",
+    "@nomiclabs/hardhat-waffle": "^2.0.1",
+    "chai": "^4.3.4",
+    "ethereum-waffle": "^3.4.0",
+    "ethers": "^5.5.2",
+    "hardhat": "^2.8.0"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.4.1",
+    "dotenv": "^10.0.0"
+  }
+}
