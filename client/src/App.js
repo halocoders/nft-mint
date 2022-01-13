@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
+import { ethers } from 'ethers';
 import './styles/App.css';
 import twitterLogo from './assets/twitter-logo.svg';
-import React from "react";
+import myEpicNft from './utils/MyEpicNFT.json'
 
 // Constants
 const TWITTER_HANDLE = '_buildspace';
@@ -11,7 +12,8 @@ const TOTAL_MINT_COUNT = 50;
 
 const App = () => {
   const [currentAccount, setCurrentAccount] = useState("");
-  const [connected, setConnected] = useState(false)
+  const [connected, setConnected] = useState(false);
+  const [loading, setLoading] = useState(false)
 
   const checkIfWalletIsConnected = async () => {
     const { ethereum } = window;
@@ -55,6 +57,39 @@ const App = () => {
       setConnected(false)
     }
   }
+
+  // call contract
+  const askContractToMintNft = async () => {
+    const CONTRACT_ADDRESS = "0x9710B7AaA376e3ff452875Fa7D82f423E008598C";
+
+    try {
+      const { ethereum } = window;
+      setLoading(true)
+
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const connectedContract = new ethers.Contract(CONTRACT_ADDRESS, myEpicNft.abi, signer);
+
+        console.log("Going to pop wallet now to pay gas...")
+        let nftTxn = await connectedContract.makeAnEpicNFT();
+
+        console.log("Mining...please wait.")
+        await nftTxn.wait(setLoading(true)).then(() => {
+          setLoading(false)
+          console.log(`Mined, see transaction: https://rinkeby.etherscan.io/tx/${nftTxn.hash}`);
+        });
+
+      } else {
+        setLoading(false)
+        console.log("Ethereum object doesn't exist!");
+      }
+    } catch (error) {
+      setLoading(false)
+      console.log(error)
+    }
+  }
+
   // Render Methods
   const renderNotConnectedContainer = () => {
     if (connected) {
@@ -85,6 +120,13 @@ const App = () => {
             Each unique. Each beautiful. Discover your NFT today.
           </p>
           {renderNotConnectedContainer()}
+          <br />
+          {currentAccount !== "" && (
+            <button onClick={askContractToMintNft} className={`cta-button connect-wallet-button ${loading ? 'disabled' : ''}`} style={{ marginTop: '20px' }}>
+              Mint NFT
+            </button>
+          )
+          }
         </div>
         <div className="footer-container">
           <img alt="Twitter Logo" className="twitter-logo" src={twitterLogo} />
