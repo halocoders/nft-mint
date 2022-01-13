@@ -14,4 +14,4 @@ node scripts/sample-script.js
 npx hardhat help
 ```
 
-# simple test
+# NFT Mint Project
