@@ -5,7 +5,7 @@ import twitterLogo from './assets/twitter-logo.svg';
 import myEpicNft from './utils/MyEpicNFT.json'
 
 // Constants
-const TWITTER_HANDLE = '_buildspace';
+const TWITTER_HANDLE = 'codewithrio';
 const TWITTER_LINK = `https://twitter.com/${TWITTER_HANDLE}`;
 const OPENSEA_LINK = '';
 const TOTAL_MINT_COUNT = 50;
@@ -14,6 +14,7 @@ const App = () => {
   const [currentAccount, setCurrentAccount] = useState("");
   const [connected, setConnected] = useState(false);
   const [loading, setLoading] = useState(false)
+  const [urlOpensea, setUrlOpensea] = useState(null)
 
   const checkIfWalletIsConnected = async () => {
     const { ethereum } = window;
@@ -60,7 +61,7 @@ const App = () => {
 
   // call contract
   const askContractToMintNft = async () => {
-    const CONTRACT_ADDRESS = "0x9710B7AaA376e3ff452875Fa7D82f423E008598C";
+    const CONTRACT_ADDRESS = "0xb531bf8e079baC3162fb8dEfFeA8286dd81e6608";
 
     try {
       const { ethereum } = window;
@@ -70,6 +71,12 @@ const App = () => {
         const provider = new ethers.providers.Web3Provider(ethereum);
         const signer = provider.getSigner();
         const connectedContract = new ethers.Contract(CONTRACT_ADDRESS, myEpicNft.abi, signer);
+
+        connectedContract.on("NewEpicNFTMinted", (from, tokenId) => {
+          console.log(from, tokenId.toNumber())
+          setUrlOpensea(`https://testnets.opensea.io/assets/${CONTRACT_ADDRESS}/${tokenId.toNumber()}`)
+          // alert(`Hey there! We've minted your NFT. It may be blank right now. It can take a max of 10 min to show up on OpenSea. Here's the link: <https://testnets.opensea.io/assets/${CONTRACT_ADDRESS}/${tokenId.toNumber()}>`)
+        });
 
         console.log("Going to pop wallet now to pay gas...")
         let nftTxn = await connectedContract.makeAnEpicNFT();
@@ -127,6 +134,12 @@ const App = () => {
             </button>
           )
           }
+          <br />
+          {loading && <p className='url-link'>Loading...</p>}
+          <br />
+          {urlOpensea && <p className='url-link'>Here is your NFT! : {' '}
+            <a href={urlOpensea} target="_blank" rel="noopener noreferrer" className='url-link'>Link</a>
+          </p>}
         </div>
         <div className="footer-container">
           <img alt="Twitter Logo" className="twitter-logo" src={twitterLogo} />
