@@ -15,11 +15,6 @@
 .header-container {
   padding-top: 30px;
 }
-.header-container .disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-  pointer-events: none;
-}
 
 .header {
   margin: 0;
@@ -29,10 +24,6 @@
 
 .sub-text {
   font-size: 25px;
-  color: white;
-}
-
-.url-link {
   color: white;
 }
 
