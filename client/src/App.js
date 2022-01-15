@@ -12,12 +12,13 @@ const TWITTER_LINK = `https://twitter.com/${TWITTER_HANDLE}`;
 const OPENSEA_LINK = '';
 const TOTAL_MINT_COUNT = 30;
 
+// 0xe5Fdf56d43f38627EB5e8e98b05efA01432F0f2A latest contract
 const CONTRACT_ADDRESS = '0x445B2E5fD11969b2dafe2390A60F2B6334B24e53';
 let connectedContract;
 
 function App() {
   const [currentAccount, setCurrentAccount] = useState('');
-  const [connected, setConnected] = useState('Nothing');
+  const [connected, setConnected] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loadingMint, setLoadingMint] = useState(false);
   const [urlOpensea, setUrlOpensea] = useState(null);
@@ -128,17 +129,7 @@ function App() {
 
   // Render Methods
   const renderNotConnectedContainer = () => {
-    if (connected) {
-      return (
-        <button
-          className="cta-button connect-wallet-button"
-          style={{ opacity: '.4', cursor: 'not-allowed' }}
-          disabled
-        >
-          Connected
-        </button>
-      );
-    } else {
+    if (!connected) {
       return (
         <Button
           colorScheme="teal"
@@ -165,8 +156,8 @@ function App() {
             Each unique. Each beautiful. Discover your NFT today.
           </p>
           <p style={{ color: 'white', marginBottom: '20px' }}>
-            Account: {currentAccount.slice(0, 5)}....
-            {currentAccount.slice(0, 5)}
+            Account: {currentAccount.slice(0, 6)}....
+            {currentAccount.slice(38, 42)}
           </p>
           <p style={{ color: 'white', marginBottom: '20px' }}>
             {totalMinted}/{TOTAL_MINT_COUNT} NFTs were minted
