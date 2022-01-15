@@ -1,7 +1,6 @@
 .App {
   height: 100vh;
   background-color: #0d1116;
-  overflow: scroll;
   text-align: center;
 }
 
@@ -30,6 +29,10 @@
 
 .sub-text {
   font-size: 25px;
+  color: white;
+}
+
+.url-link {
   color: white;
 }
 
