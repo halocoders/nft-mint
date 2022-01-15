@@ -2,121 +2,146 @@ import { useEffect, useState } from 'react';
 import { ethers } from 'ethers';
 import './styles/App.css';
 import twitterLogo from './assets/twitter-logo.svg';
-import myEpicNft from './utils/MyEpicNFT.json'
+import myEpicNft from './utils/MyEpicNFT.json';
 
 // Constants
 const TWITTER_HANDLE = 'codewithrio';
 const TWITTER_LINK = `https://twitter.com/${TWITTER_HANDLE}`;
 const OPENSEA_LINK = '';
-const TOTAL_MINT_COUNT = 50;
+const TOTAL_MINT_COUNT = 30;
+const CONTRACT_ADDRESS = '0x445B2E5fD11969b2dafe2390A60F2B6334B24e53';
+
+let connectedContract;
 
 const App = () => {
-  const [currentAccount, setCurrentAccount] = useState("");
+  const [currentAccount, setCurrentAccount] = useState('');
   const [connected, setConnected] = useState(false);
-  const [loading, setLoading] = useState(false)
-  const [urlOpensea, setUrlOpensea] = useState(null)
+  const [loading, setLoading] = useState(false);
+  const [urlOpensea, setUrlOpensea] = useState(null);
+  const [totalMinted, setTotalMinted] = useState(null);
 
+  // connect contract function
+  const connectContract = async () => {
+    const { ethereum } = window;
+
+    const provider = new ethers.providers.Web3Provider(ethereum);
+    const signer = provider.getSigner();
+    connectedContract = new ethers.Contract(
+      CONTRACT_ADDRESS,
+      myEpicNft.abi,
+      signer
+    );
+    connectedContract
+      .getTotalNFTsMintedSoFar()
+      .then((res) => setTotalMinted(res.toNumber()));
+  };
+
+  // check is wallet connected
   const checkIfWalletIsConnected = async () => {
     const { ethereum } = window;
 
     if (!ethereum) {
-      console.log("Make sure you have metamask!");
+      console.log('Make sure you have metamask!');
       return;
     } else {
-      console.log("We have the ethereum object", ethereum);
+      console.log('We have the ethereum object', ethereum);
     }
 
     const accounts = await ethereum.request({ method: 'eth_accounts' });
 
     if (accounts.length !== 0) {
       const account = accounts[0];
-      setConnected(true)
-      console.log("Found an authorized account:", account);
-      setCurrentAccount(account)
+      setConnected(true);
+      setCurrentAccount(account);
     } else {
-      console.log("No authorized account found")
+      console.log('No authorized account found');
     }
-  }
+  };
 
   // connect wallet
   const connectWallet = async () => {
     try {
-      setConnected(true)
+      setConnected(true);
       const { ethereum } = window;
 
       if (!ethereum) {
-        alert("Get MetaMask!");
+        alert('Get MetaMask!');
         return;
       }
-
-      const accounts = await ethereum.request({ method: "eth_requestAccounts" });
-
-      console.log("Connected", accounts[0]);
+      const accounts = await ethereum.request({
+        method: 'eth_requestAccounts',
+      });
       setCurrentAccount(accounts[0]);
     } catch (error) {
       console.log(error);
-      setConnected(false)
+      setConnected(false);
     }
-  }
+  };
 
-  // call contract
+  // mint
   const askContractToMintNft = async () => {
-    const CONTRACT_ADDRESS = "0xb531bf8e079baC3162fb8dEfFeA8286dd81e6608";
-
     try {
       const { ethereum } = window;
-      setLoading(true)
+      setLoading(true);
 
       if (ethereum) {
-        const provider = new ethers.providers.Web3Provider(ethereum);
-        const signer = provider.getSigner();
-        const connectedContract = new ethers.Contract(CONTRACT_ADDRESS, myEpicNft.abi, signer);
-
-        connectedContract.on("NewEpicNFTMinted", (from, tokenId) => {
-          console.log(from, tokenId.toNumber())
-          setUrlOpensea(`https://testnets.opensea.io/assets/${CONTRACT_ADDRESS}/${tokenId.toNumber()}`)
-          // alert(`Hey there! We've minted your NFT. It may be blank right now. It can take a max of 10 min to show up on OpenSea. Here's the link: <https://testnets.opensea.io/assets/${CONTRACT_ADDRESS}/${tokenId.toNumber()}>`)
+        connectedContract.on('NewEpicNFTMinted', (from, tokenId) => {
+          console.log(from, tokenId.toNumber());
+          setUrlOpensea(
+            `https://testnets.opensea.io/assets/${CONTRACT_ADDRESS}/${tokenId.toNumber()}`
+          );
         });
 
-        console.log("Going to pop wallet now to pay gas...")
+        console.log('Going to pop wallet now to pay gas...');
         let nftTxn = await connectedContract.makeAnEpicNFT();
 
-        console.log("Mining...please wait.")
+        console.log('Mining...please wait.');
         await nftTxn.wait(setLoading(true)).then(() => {
-          setLoading(false)
-          console.log(`Mined, see transaction: https://rinkeby.etherscan.io/tx/${nftTxn.hash}`);
+          connectedContract
+            .getTotalNFTsMintedSoFar()
+            .then((res) => setTotalMinted(res.toNumber()));
+          setLoading(false);
+          console.log(
+            `Mined, see transaction: https://rinkeby.etherscan.io/tx/${nftTxn.hash}`
+          );
         });
-
       } else {
-        setLoading(false)
+        setLoading(false);
         console.log("Ethereum object doesn't exist!");
       }
     } catch (error) {
-      setLoading(false)
-      console.log(error)
+      setLoading(false);
+      console.log(error);
     }
-  }
+  };
 
   // Render Methods
   const renderNotConnectedContainer = () => {
     if (connected) {
       return (
-        <button className="cta-button connect-wallet-button" style={{ opacity: '.5', cursor: 'not-allowed' }}>
+        <button
+          className="cta-button connect-wallet-button"
+          style={{ opacity: '.5', cursor: 'not-allowed' }}
+        >
           You're connected
         </button>
-      )
+      );
     } else {
       return (
-        <button className="cta-button connect-wallet-button" onClick={() => connectWallet()}>
+        <button
+          className="cta-button connect-wallet-button"
+          onClick={() => connectWallet()}
+        >
           Connect to Wallet
         </button>
-      )
+      );
     }
-  }
+  };
 
   useEffect(() => {
     checkIfWalletIsConnected();
-  }, [])
+    connectContract();
+  }, []);
 
   return (
     <div className="App">
@@ -126,20 +151,39 @@ const App = () => {
           <p className="sub-text">
             Each unique. Each beautiful. Discover your NFT today.
           </p>
+          <p style={{ color: 'white' }}>
+            {totalMinted}/{TOTAL_MINT_COUNT} NFTs were minted
+          </p>
           {renderNotConnectedContainer()}
           <br />
-          {currentAccount !== "" && (
-            <button onClick={askContractToMintNft} className={`cta-button connect-wallet-button ${loading ? 'disabled' : ''}`} style={{ marginTop: '20px' }}>
-              Mint NFT
+          {currentAccount !== '' && (
+            <button
+              onClick={askContractToMintNft}
+              className={`cta-button connect-wallet-button ${
+                loading || totalMinted === TOTAL_MINT_COUNT ? 'disabled' : ''
+              }`}
+              style={{ marginTop: '20px' }}
+              disabled={totalMinted === TOTAL_MINT_COUNT}
+            >
+              {totalMinted === TOTAL_MINT_COUNT ? 'SOLD OUT' : 'Mint NFT'}
             </button>
-          )
-          }
+          )}
           <br />
-          {loading && <p className='url-link'>Loading...</p>}
+          {loading && <p className="url-link">Loading...</p>}
           <br />
-          {urlOpensea && <p className='url-link'>Here is your NFT! : {' '}
-            <a href={urlOpensea} target="_blank" rel="noopener noreferrer" className='url-link'>Link</a>
-          </p>}
+          {urlOpensea && (
+            <p className="url-link">
+              Here is your NFT! :{' '}
+              <a
+                href={urlOpensea}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="url-link"
+              >
+                Link
+              </a>
+            </p>
+          )}
         </div>
         <div className="footer-container">
           <img alt="Twitter Logo" className="twitter-logo" src={twitterLogo} />
