@@ -9,7 +9,7 @@ import { Button } from '@chakra-ui/react';
 // Constants
 const TWITTER_HANDLE = 'codewithrio';
 const TWITTER_LINK = `https://twitter.com/${TWITTER_HANDLE}`;
-const OPENSEA_LINK = '';
+// const OPENSEA_LINK = '';
 const TOTAL_MINT_COUNT = 30;
 
 // 0xe5Fdf56d43f38627EB5e8e98b05efA01432F0f2A latest contract
@@ -145,7 +145,7 @@ function App() {
 
   useEffect(() => {
     checkIfWalletIsConnected();
-  }, []);
+  });
 
   return (
     <div className="App">
@@ -199,6 +199,7 @@ function App() {
               }}
             >
               <iframe
+                title="giphy loading"
                 src="https://giphy.com/embed/QBd2kLB5qDmysEXre9"
                 width="480"
                 height="150"
