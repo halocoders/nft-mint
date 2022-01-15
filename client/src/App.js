@@ -11,6 +11,7 @@ const TWITTER_HANDLE = 'codewithrio';
 const TWITTER_LINK = `https://twitter.com/${TWITTER_HANDLE}`;
 // const OPENSEA_LINK = '';
 const TOTAL_MINT_COUNT = 30;
+const rinkebyChainId = '0x4';
 
 // 0xe5Fdf56d43f38627EB5e8e98b05efA01432F0f2A latest contract
 const CONTRACT_ADDRESS = '0x445B2E5fD11969b2dafe2390A60F2B6334B24e53';
@@ -23,6 +24,7 @@ function App() {
   const [loadingMint, setLoadingMint] = useState(false);
   const [urlOpensea, setUrlOpensea] = useState(null);
   const [totalMinted, setTotalMinted] = useState('-');
+  const [error, setError] = useState(null);
 
   // connect contract function
   const connectContract = async () => {
@@ -35,9 +37,9 @@ function App() {
       myEpicNft.abi,
       signer
     );
-    connectedContract
-      .getTotalNFTsMintedSoFar()
-      .then((res) => setTotalMinted(res.toNumber()));
+    connectedContract.getTotalNFTsMintedSoFar().then((res) => {
+      setTotalMinted(res.toNumber());
+    });
   };
 
   // check is wallet connected
@@ -45,10 +47,8 @@ function App() {
     const { ethereum } = window;
 
     if (!ethereum) {
-      console.log('Make sure you have metamask!');
+      alert('Make sure you have metamask!');
       return;
-    } else {
-      console.log('We have the ethereum object', ethereum);
     }
 
     const accounts = await ethereum.request({ method: 'eth_accounts' });
@@ -73,13 +73,21 @@ function App() {
         alert('Get MetaMask!');
         return;
       }
-      const accounts = await ethereum.request({
-        method: 'eth_requestAccounts',
-      });
-      setCurrentAccount(accounts[0]);
-      setLoading(false);
-      setConnected(true);
-      connectContract();
+
+      let chainId = await ethereum.request({ method: 'eth_chainId' });
+      if (chainId !== rinkebyChainId) {
+        setError('You are not connected to the Rinkeby Test Network!');
+        setLoading(false);
+      } else {
+        setError(null);
+        const accounts = await ethereum.request({
+          method: 'eth_requestAccounts',
+        });
+        setCurrentAccount(accounts[0]);
+        setLoading(false);
+        setConnected(true);
+        connectContract();
+      }
     } catch (error) {
       console.log(error);
       setLoading(false);
@@ -92,29 +100,39 @@ function App() {
       const { ethereum } = window;
       setLoading(true);
       setLoadingMint(true);
+      setUrlOpensea(null);
 
       if (ethereum) {
-        connectedContract.on('NewEpicNFTMinted', (from, tokenId) => {
-          console.log(from, tokenId.toNumber());
-          setUrlOpensea(
-            `https://testnets.opensea.io/assets/${CONTRACT_ADDRESS}/${tokenId.toNumber()}`
-          );
-        });
+        let chainId = await ethereum.request({ method: 'eth_chainId' });
 
-        console.log('Going to pop wallet now to pay gas...');
-        let nftTxn = await connectedContract.makeAnEpicNFT();
-
-        console.log('Mining...please wait.');
-        await nftTxn.wait(setLoading(true)).then(() => {
-          connectedContract
-            .getTotalNFTsMintedSoFar()
-            .then((res) => setTotalMinted(res.toNumber()));
+        if (chainId !== rinkebyChainId) {
+          setError('You are not connected to the Rinkeby Test Network!');
           setLoading(false);
           setLoadingMint(false);
-          console.log(
-            `Mined, see transaction: https://rinkeby.etherscan.io/tx/${nftTxn.hash}`
-          );
-        });
+        } else {
+          setError(null);
+          connectedContract.on('NewEpicNFTMinted', (from, tokenId) => {
+            // console.log(from, tokenId.toNumber());
+            setUrlOpensea(
+              `https://testnets.opensea.io/assets/${CONTRACT_ADDRESS}/${tokenId.toNumber()}`
+            );
+          });
+
+          // console.log('Going to pop wallet now to pay gas...');
+          let nftTxn = await connectedContract.makeAnEpicNFT();
+
+          // console.log('Mining...please wait.');
+          await nftTxn.wait(setLoading(true)).then(() => {
+            connectedContract
+              .getTotalNFTsMintedSoFar()
+              .then((res) => setTotalMinted(res.toNumber()));
+            setLoading(false);
+            setLoadingMint(false);
+            // console.log(
+            //   `Mined, see transaction: https://rinkeby.etherscan.io/tx/${nftTxn.hash}`
+            // );
+          });
+        }
       } else {
         setLoading(false);
         setLoadingMint(false);
@@ -131,14 +149,16 @@ function App() {
   const renderNotConnectedContainer = () => {
     if (!connected) {
       return (
-        <Button
-          colorScheme="teal"
-          size="md"
-          isLoading={loading}
-          onClick={connectWallet}
-        >
-          Connect Wallet
-        </Button>
+        <>
+          <Button
+            colorScheme="teal"
+            size="md"
+            isLoading={loading}
+            onClick={connectWallet}
+          >
+            Connect Wallet
+          </Button>
+        </>
       );
     }
   };
@@ -175,19 +195,27 @@ function App() {
               </Button>
             )}
           </div>
+          <p style={{ color: 'red', marginTop: '10px' }}>{error}</p>
           <br />
           {urlOpensea && (
-            <p style={{ color: 'white' }}>
-              Here is your NFT! :{' '}
-              <a
-                href={urlOpensea}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ color: 'white', textDecoration: 'underline' }}
-              >
-                Link
-              </a>
-            </p>
+            <>
+              <p style={{ color: 'white' }}>
+                Here is your NFT! :{' '}
+                <a
+                  href={urlOpensea}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: 'white', textDecoration: 'underline' }}
+                >
+                  Link
+                </a>
+              </p>
+              <p className="note">
+                Rinkeby Test Network sometimes runs quite long. If your NFT
+                doesn't show up, don't worry. Check back tomorrow, don't forget
+                to save your NFT link!
+              </p>
+            </>
           )}
           {loadingMint && (
             <div

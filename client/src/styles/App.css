@@ -88,6 +88,17 @@
   font-weight: bold;
 }
 
+.note {
+  width: 50%;
+  margin: auto;
+  color: #f74c4c;
+  padding: 10px;
+  border: 1px solid #f74c4c;
+  border-radius: 5px;
+  font-size: 13px;
+  margin-top: 10px;
+}
+
 /* KeyFrames */
 @-webkit-keyframes gradient-animation {
   0% {
