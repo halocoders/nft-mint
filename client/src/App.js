@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { ethers } from 'ethers';
 import myEpicNft from './utils/MyEpicNFT.json';
 
-import { Button } from '@chakra-ui/react';
+import { Button, Alert, AlertIcon, Stack } from '@chakra-ui/react';
 
 // Constants
 const TWITTER_HANDLE = 'codewithrio';
@@ -25,6 +25,7 @@ function App() {
   const [urlOpensea, setUrlOpensea] = useState(null);
   const [totalMinted, setTotalMinted] = useState('-');
   const [error, setError] = useState(null);
+  const [noMeta, setNoMeta] = useState(false);
 
   // connect contract function
   const connectContract = async () => {
@@ -47,8 +48,7 @@ function App() {
     const { ethereum } = window;
 
     if (!ethereum) {
-      alert('Make sure you have metamask!');
-      return;
+      setNoMeta(true);
     }
 
     const accounts = await ethereum.request({ method: 'eth_accounts' });
@@ -70,8 +70,7 @@ function App() {
       const { ethereum } = window;
 
       if (!ethereum) {
-        alert('Get MetaMask!');
-        return;
+        setNoMeta(true);
       }
 
       let chainId = await ethereum.request({ method: 'eth_chainId' });
@@ -155,9 +154,25 @@ function App() {
             size="md"
             isLoading={loading}
             onClick={connectWallet}
+            disabled={noMeta}
           >
             Connect Wallet
           </Button>
+          <Stack mt={4} mx={'auto'} maxW={'400px'}>
+            {noMeta && (
+              <Alert status="warning">
+                <AlertIcon />
+                Make sure you have Metamask
+                <a
+                  style={{ marginLeft: '4px', textDecoration: 'underline' }}
+                  href="https://chrome.google.com/webstore/detail/metamask/nkbihfbeogaeaoehlefnkodbefgpgknn?hl=en"
+                >
+                  {' '}
+                  installed
+                </a>
+              </Alert>
+            )}
+          </Stack>
         </>
       );
     }
@@ -211,9 +226,9 @@ function App() {
                 </a>
               </p>
               <p className="note">
-                Rinkeby Test Network sometimes runs quite long. If your NFT
-                doesn't show up, don't worry. Check back tomorrow, don't forget
-                to save your NFT link!
+                Rinkeby and OpenSea Test Network sometimes runs quite long. If
+                your NFT doesn't show up, don't worry. Check back a few minutes
+                or after a couple of hours, don't forget to save your NFT link!
               </p>
             </>
           )}
