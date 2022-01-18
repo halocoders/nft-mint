@@ -10,11 +10,11 @@ import { Button, Alert, AlertIcon, Stack } from '@chakra-ui/react';
 const TWITTER_HANDLE = 'codewithrio';
 const TWITTER_LINK = `https://twitter.com/${TWITTER_HANDLE}`;
 // const OPENSEA_LINK = '';
-const TOTAL_MINT_COUNT = 30;
+const TOTAL_MINT_COUNT = 5;
 const rinkebyChainId = '0x4';
 
-// 0xe5Fdf56d43f38627EB5e8e98b05efA01432F0f2A latest contract
-const CONTRACT_ADDRESS = '0x445B2E5fD11969b2dafe2390A60F2B6334B24e53';
+// 0x3ebeDb21230eE1B865F8c621Fe260dA1d9a8c472 contract before
+const CONTRACT_ADDRESS = '0x6A1E253446c56bBEcC11729B1363d8cDA846b15b';
 let connectedContract;
 
 function App() {
@@ -118,7 +118,9 @@ function App() {
           });
 
           // console.log('Going to pop wallet now to pay gas...');
-          let nftTxn = await connectedContract.makeAnEpicNFT();
+          let nftTxn = await connectedContract.makeAnEpicNFT({
+            value: ethers.utils.parseEther('0.01'),
+          });
 
           // console.log('Mining...please wait.');
           await nftTxn.wait(setLoading(true)).then(() => {

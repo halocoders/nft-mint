@@ -18,6 +18,8 @@ contract MyEpicNFT is ERC721URIStorage {
   using Counters for Counters.Counter;
   Counters.Counter private _tokenIds;
 
+  uint public constant PRICE = 0.01 ether;
+
   // This is our SVG code. All we need to change is the word that's displayed. Everything else stays the same.
   // So, we make a baseSvg variable here that all our NFTs can use.
   string baseSvg = "<svg xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='xMinYMin meet' viewBox='0 0 350 350'><style>.base { fill: white; font-family: serif; font-size: 24px; }</style><rect width='100%' height='100%' fill='black' /><text x='50%' y='50%' class='base' dominant-baseline='middle' text-anchor='middle'>";
@@ -61,11 +63,12 @@ contract MyEpicNFT is ERC721URIStorage {
   }
 
   // A function our user will hit to get their NFT.
-  function makeAnEpicNFT() public {
+  function makeAnEpicNFT() public payable {
      // Get the current tokenId, this starts at 0.
     uint256 newItemId = _tokenIds.current();
 
-    require(newItemId < 30, 'All of 2 NFTs were minted!');
+    require(newItemId < 5, 'All of 2 NFTs were minted!');
+    require(msg.value >= PRICE, "Not enough ether to purchase NFTs.");
 
     // We go and randomly grab one word from each of the three arrays.
     string memory first = pickRandomFirstWord(newItemId);
